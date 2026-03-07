@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+build/
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+prisma/*.db
+
+# Env files — NEVER commit real secrets
+.env
+.env.local
+.env.production
+
+# Keep example
+!.env.example
+
+# Misc
+.DS_Store
+*.pem
+.vercel
+npm-debug.log*

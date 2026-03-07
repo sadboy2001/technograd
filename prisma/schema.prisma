@@ -1,0 +1,35 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Neon serverless requires directUrl for migrations
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  progress  UserProgress[]
+}
+
+model UserProgress {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course         String
+  completedSteps String   // JSON array: '["l1_1_0","l1_1_1"]'
+  lastLessonId   String?
+  lastStepIndex  Int?
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, course])
+}

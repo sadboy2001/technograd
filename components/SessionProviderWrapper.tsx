@@ -1,0 +1,13 @@
+'use client'
+// components/SessionProviderWrapper.tsx
+// Wraps the app in NextAuth's SessionProvider (must be a client component)
+
+import { SessionProvider } from 'next-auth/react'
+
+export function SessionProviderWrapper({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <SessionProvider>{children}</SessionProvider>
+}
