@@ -7539,22 +7539,43 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
             }
         }
 
+        // Debounced sync — batches rapid calls into one request after 2s idle
+        let _syncTimer = null;
         function syncProgressToServer() {
+            if (_syncTimer) clearTimeout(_syncTimer);
+            _syncTimer = setTimeout(function() {
+                try {
+                    const course = activeCourse;
+                    const steps = Array.from(allProgress[course]);
+                    fetch('/api/progress', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            course,
+                            completedSteps: steps,
+                            lastLessonId:  state.currentLessonId,
+                            lastStepIndex: state.currentStepIndex,
+                        })
+                    }).catch(() => {});
+                } catch(e) {}
+            }, 2000); // wait 2s before sending — groups rapid navigation into 1 request
+        }
+
+        // Flush on page close so progress isn't lost
+        window.addEventListener('beforeunload', function() {
+            if (!_syncTimer) return;
+            clearTimeout(_syncTimer);
             try {
                 const course = activeCourse;
                 const steps = Array.from(allProgress[course]);
-                fetch('/api/progress', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        course,
-                        completedSteps: steps,
-                        lastLessonId:  state.currentLessonId,
-                        lastStepIndex: state.currentStepIndex,
-                    })
-                }).catch(() => {});
+                navigator.sendBeacon('/api/progress', JSON.stringify({
+                    course,
+                    completedSteps: steps,
+                    lastLessonId:  state.currentLessonId,
+                    lastStepIndex: state.currentStepIndex,
+                }));
             } catch(e) {}
-        }
+        });
 
         async function loadProgressFromServer() {
             try {

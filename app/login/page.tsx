@@ -5,11 +5,10 @@ import { signIn, useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-// Separate component that uses useSearchParams — must be inside Suspense
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -35,7 +34,11 @@ function LoginForm() {
   }
 
   if (status === 'loading' || status === 'authenticated') {
-    return <div className="auth-page"><div style={{ color: '#aaa', fontSize: 14 }}>Загрузка...</div></div>
+    return (
+      <div className="auth-page">
+        <div style={{ color: '#aaa', fontSize: 14 }}>Загрузка...</div>
+      </div>
+    )
   }
 
   return (
@@ -54,20 +57,26 @@ function LoginForm() {
 
         <form className="auth-form" onSubmit={handleSubmit}>
           {registered && (
-            <div className="auth-success">✅ Регистрация прошла успешно! Войдите в аккаунт.</div>
+            <div className="auth-success">
+              ✅ Регистрация прошла успешно! Войдите в аккаунт.
+            </div>
           )}
           {error && <div className="auth-error">{error}</div>}
 
           <div className="auth-field">
             <label className="auth-label" htmlFor="email">Email</label>
-            <input id="email" type="email" className="auth-input" placeholder="your@email.com"
-              value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
+            <input id="email" type="email" className="auth-input"
+              placeholder="your@email.com" value={email}
+              onChange={e => setEmail(e.target.value)}
+              required autoComplete="email" />
           </div>
 
           <div className="auth-field">
             <label className="auth-label" htmlFor="password">Пароль</label>
-            <input id="password" type="password" className="auth-input" placeholder="••••••••"
-              value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" />
+            <input id="password" type="password" className="auth-input"
+              placeholder="••••••••" value={password}
+              onChange={e => setPassword(e.target.value)}
+              required autoComplete="current-password" />
           </div>
 
           <button type="submit" className="auth-btn" disabled={loading}>
@@ -76,14 +85,14 @@ function LoginForm() {
         </form>
 
         <p className="auth-footer">
-          Нет аккаунта? <Link href="/register">Зарегистрироваться</Link>
+          Нет аккаунта?{' '}
+          <Link href="/register">Зарегистрироваться</Link>
         </p>
       </div>
     </div>
   )
 }
 
-// Page wraps the form in Suspense — required by Next.js 14 for useSearchParams
 export default function LoginPage() {
   return (
     <Suspense fallback={
