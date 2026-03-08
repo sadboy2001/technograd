@@ -212,6 +212,44 @@ function AddStepModal({ lessonId, onAdd, onClose }: { lessonId: string; onAdd: (
   )
 }
 
+function AddLessonModal({ chapterId, onAdd, onClose }: { chapterId: string; onAdd: () => void; onClose: () => void }) {
+  const [title, setTitle] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const save = async () => {
+    if (!title.trim()) return
+    setSaving(true)
+    await fetch('/api/admin/lessons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chapterId, title, id: `lesson_${Date.now()}` })
+    })
+    setSaving(false)
+    onAdd()
+    onClose()
+  }
+
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.8)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ background:'#161616', border:'1px solid #2a2a2a', borderRadius:14, width:440, padding:28 }}>
+        <h2 style={{ fontSize:16, fontWeight:700, color:'#fff', marginBottom:20 }}>Добавить урок</h2>
+        <div style={{ marginBottom:20 }}>
+          <label style={S.label}>Название урока</label>
+          <input style={S.input} value={title} onChange={e => setTitle(e.target.value)}
+            placeholder="1.5 Название темы" autoFocus
+            onKeyDown={e => e.key === 'Enter' && save()} />
+        </div>
+        <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+          <button onClick={onClose} style={S.btn()}>Отмена</button>
+          <button onClick={save} disabled={saving || !title.trim()} style={S.btn('primary')}>
+            {saving ? 'Создание...' : 'Создать'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminCourseEditor() {
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
@@ -219,6 +257,7 @@ export default function AdminCourseEditor() {
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null)
   const [editStep, setEditStep] = useState<Step | null>(null)
   const [addingStep, setAddingStep] = useState(false)
+  const [addingLesson, setAddingLesson] = useState<string | null>(null)
 
   const load = useCallback(() => {
     setLoading(true)
@@ -294,8 +333,14 @@ node prisma/seed.mjs`}
         <div style={{ padding:'8px 0' }}>
           {course?.chapters.map(ch => (
             <div key={ch.id}>
-              <div style={{ padding:'8px 14px', fontSize:11, color:'#555', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.06em' }}>
-                {ch.title}
+              <div style={{ padding:'8px 14px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <span style={{ fontSize:11, color:'#555', fontWeight:600, textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>
+                  {ch.title}
+                </span>
+                <button onClick={() => setAddingLesson(ch.id)} style={{
+                  background:'transparent', border:'none', color:'#555', cursor:'pointer',
+                  fontSize:18, lineHeight:1, padding:'0 4px', borderRadius:4,
+                }} title="Добавить урок">+</button>
               </div>
               {ch.lessons.map(lesson => (
                 <button key={lesson.id} onClick={() => setActiveLesson(lesson)} style={{
@@ -386,6 +431,15 @@ node prisma/seed.mjs`}
           lessonId={activeLesson.id}
           onAdd={load}
           onClose={() => setAddingStep(false)}
+        />
+      )}
+
+      {/* Add lesson modal */}
+      {addingLesson && (
+        <AddLessonModal
+          chapterId={addingLesson}
+          onAdd={load}
+          onClose={() => setAddingLesson(null)}
         />
       )}
     </div>
