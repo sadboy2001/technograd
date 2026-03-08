@@ -7066,10 +7066,29 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
 
 
         // --- Helpers ---
+        // DB-loaded course data (populated from API on init)
+        const dbCourseData = { basic: null, advanced: null, final: null };
+
         function getActiveCourseData() {
+            // Use DB data if loaded, fall back to hardcoded
+            if (dbCourseData[activeCourse]) return dbCourseData[activeCourse];
             if (activeCourse === 'advanced') return advancedCourseData;
             if (activeCourse === 'final') return finalCourseData;
             return courseData;
+        }
+
+        async function loadCourseFromDB(courseId) {
+            try {
+                const r = await fetch(`/api/course/${courseId}`);
+                if (!r.ok) return; // fall back to hardcoded
+                const chapters = await r.json();
+                if (Array.isArray(chapters) && chapters.length > 0) {
+                    dbCourseData[courseId] = chapters;
+                    console.log(`[DB] Loaded ${courseId}: ${chapters.length} chapters`);
+                }
+            } catch(e) {
+                console.warn(`[DB] Could not load ${courseId}, using hardcoded data`);
+            }
         }
 
         function getLessonById(id) {
@@ -7739,7 +7758,18 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
         // Progress starts fresh
 
         // Load all courses' progress first, then render
+        // Expose raw course data to window so browser-seed.js can read it
+        window.courseData         = courseData;
+        window.advancedCourseData = advancedCourseData;
+        window.finalCourseData    = finalCourseData;
+
         (async function init() {
+            // Load all courses from DB in parallel (falls back to hardcoded if DB empty)
+            await Promise.all([
+                loadCourseFromDB('basic'),
+                loadCourseFromDB('advanced'),
+                loadCourseFromDB('final'),
+            ]);
             await loadProgressFromServer();
             refreshAll();
         })();
