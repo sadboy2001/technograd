@@ -10,6 +10,7 @@ export function CourseApp() {
   const scriptLoaded = useRef(false)
 
   useEffect(() => {
+    if (status === 'loading') return
     if (scriptLoaded.current) return
     scriptLoaded.current = true
     const existing = document.getElementById('course-main-js')
