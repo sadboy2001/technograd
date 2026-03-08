@@ -28,8 +28,7 @@ function LoginForm() {
     if (result?.error) {
       setError('Неверный email или пароль')
     } else {
-      router.push('/')
-      router.refresh()
+      window.location.href = '/'
     }
   }
 
