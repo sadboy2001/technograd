@@ -13,11 +13,12 @@ export function CourseApp() {
     if (status === 'loading') return
     if (scriptLoaded.current) return
     scriptLoaded.current = true
+
     const existing = document.getElementById('course-main-js')
     if (existing) existing.remove()
-      
+
     ;(window as any).__USER_ROLE__ = session?.user?.role || 'user'
-    
+
     const script = document.createElement('script')
     script.id = 'course-main-js'
     script.src = '/main.js?v=' + Date.now()

@@ -1,12 +1,23 @@
 // types/next-auth.d.ts
-// Extend the built-in NextAuth types to include `id` on session.user
-
 import type { DefaultSession } from 'next-auth'
 
 declare module 'next-auth' {
   interface Session {
     user: {
       id: string
+      role: string
     } & DefaultSession['user']
+  }
+
+  interface User {
+    id: string
+    role?: string
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id: string
+    role: string
   }
 }
