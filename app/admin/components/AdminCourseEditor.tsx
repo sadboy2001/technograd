@@ -378,6 +378,15 @@ export default function AdminCourseEditor() {
     load()
   }
 
+  const reorderStep = async (stepId: string, direction: 'up' | 'down') => {
+  await fetch('/api/admin/steps/reorder', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ stepId, direction }),
+  })
+  load()
+}
+
   const stepIcon = (type: string) => type === 'quiz' ? '❓' : type === 'practice' ? '🔧' : '📖'
 
   if (loading) return <div style={{ padding: 40, color: '#666' }}>Загрузка курсов...</div>
@@ -502,6 +511,18 @@ export default function AdminCourseEditor() {
                   }}>
                     {step.type}
                   </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+  <button onClick={() => reorderStep(step.id, 'up')} disabled={i === 0} style={{
+    background: 'transparent', border: '1px solid #2a2a2a', borderRadius: 4,
+    color: i === 0 ? '#333' : '#666', cursor: i === 0 ? 'default' : 'pointer',
+    fontSize: 10, padding: '2px 6px', lineHeight: 1,
+  }}>▲</button>
+  <button onClick={() => reorderStep(step.id, 'down')} disabled={i === activeLesson.steps.length - 1} style={{
+    background: 'transparent', border: '1px solid #2a2a2a', borderRadius: 4,
+    color: i === activeLesson.steps.length - 1 ? '#333' : '#666', cursor: i === activeLesson.steps.length - 1 ? 'default' : 'pointer',
+    fontSize: 10, padding: '2px 6px', lineHeight: 1,
+  }}>▼</button>
+</div>
                   <button onClick={() => setPreviewStep(step)} style={{
                     background: 'transparent', border: '1px solid #2a2a2a', borderRadius: 6,
                     color: '#666', cursor: 'pointer', fontSize: 12, padding: '4px 8px',
