@@ -33,8 +33,16 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 401 })
 
   let body: any
-  try { body = await request.json() }
-  catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
+  try {
+    const ct = request.headers.get('content-type') || ''
+    // sendBeacon sends text/plain — parse the raw text as JSON
+    if (ct.includes('text/plain')) {
+      const text = await request.text()
+      body = JSON.parse(text)
+    } else {
+      body = await request.json()
+    }
+  } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
 
   const { course, completedSteps, lastLessonId, lastStepIndex } = body
   if (!course || !Array.isArray(completedSteps)) {

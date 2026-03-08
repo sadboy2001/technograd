@@ -1,3 +1,4 @@
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,6 +14,7 @@ model User {
   name      String?
   email     String   @unique
   password  String
+  role      String   @default("user") // "user" | "admin"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -30,4 +32,55 @@ model UserProgress {
   updatedAt      DateTime @updatedAt
 
   @@unique([userId, course])
+}
+
+model Course {
+  id        String   @id  // "basic" | "advanced" | "final"
+  title     String
+  order     Int      @default(0)
+  chapters  Chapter[]
+}
+
+model Chapter {
+  id        String   @id  // "ch1", "adv_ch1", etc
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title     String
+  order     Int      @default(0)
+  lessons   Lesson[]
+}
+
+model Lesson {
+  id        String   @id  // "l1_1", "adv_l1_1", etc
+  chapterId String
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  title     String
+  order     Int      @default(0)
+  steps     Step[]
+}
+
+model Step {
+  id            String   @id @default(cuid())
+  lessonId      String
+  lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  order         Int      @default(0)
+  type          String   // "theory" | "quiz" | "practice"
+  title         String
+  // Theory fields
+  content       String?  // HTML content
+  // Quiz fields
+  question      String?
+  instruction   String?
+  options       String?  // JSON array
+  correctAnswers String? // JSON array of indices
+  multiple      Boolean  @default(false)
+  explanation   String?
+  points        Int      @default(1)
+  statsSolved   Int      @default(0)
+  statsAccuracy Int      @default(0)
+  // Practice fields
+  practiceType  String?
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
