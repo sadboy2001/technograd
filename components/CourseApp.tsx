@@ -10,16 +10,21 @@ export function CourseApp() {
   const scriptLoaded = useRef(false)
 
   useEffect(() => {
+    if (status === 'loading') return
     if (scriptLoaded.current) return
     scriptLoaded.current = true
+
     const existing = document.getElementById('course-main-js')
     if (existing) existing.remove()
+
+    ;(window as any).__USER_ROLE__ = session?.user?.role || 'user'
+
     const script = document.createElement('script')
     script.id = 'course-main-js'
     script.src = '/main.js?v=' + Date.now()
     script.async = false
     document.body.appendChild(script)
-  }, [])
+  }, [status])
 
   const handleToggleDropdown = () => {
     if (typeof (window as any).toggleCourseDropdown === 'function') {

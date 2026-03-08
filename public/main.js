@@ -7110,23 +7110,23 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
 
         // Returns true if a lesson should be locked (previous lesson not fully completed)
         function isLessonLocked(lessonId) {
-            const courseData = getActiveCourseData();
-            let prevLesson = null;
-            for (const chapter of courseData) {
-                const lessons = chapter.lessons || [];
-                for (let i = 0; i < lessons.length; i++) {
-                    if (lessons[i].id === lessonId) {
-                        if (i === 0 && courseData[0] === chapter) return false; // very first lesson always unlocked
-                        if (prevLesson === null) return false; // first lesson in course
-                        // Check if prevLesson is fully completed
-                        const prevSteps = prevLesson.steps || [];
-                        const allDone = prevSteps.length > 0 && prevSteps.every((_, idx) => isStepCompleted(prevLesson.id, idx));
-                        return !allDone;
-                    }
-                    prevLesson = lessons[i];
-                }
+            if (window.__USER_ROLE__ === 'admin') return false;
+    const courseData = getActiveCourseData();
+    let prevLesson = null;
+    for (const chapter of courseData) {
+        const lessons = chapter.lessons || [];
+        for (let i = 0; i < lessons.length; i++) {
+            if (lessons[i].id === lessonId) {
+                if (i === 0 && courseData[0] === chapter) return false;
+                if (prevLesson === null) return false;
+                const prevSteps = prevLesson.steps || [];
+                const allDone = prevSteps.length > 0 && prevSteps.every((_, idx) => isStepCompleted(prevLesson.id, idx));
+                return !allDone;
             }
-            return false;
+            prevLesson = lessons[i];
+        }
+    }
+    return false;
         }
 
         function isLessonFullyCompleted(lessonId) {
@@ -7690,7 +7690,7 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
         };
 
         function updateCourseLockState() {
-            const locked = !isBasicCourseCompleted();
+            const locked = !isBasicCourseCompleted() && window.__USER_ROLE__ !== 'admin';
             ['advanced', 'final'].forEach(key => {
                 const opt  = document.getElementById('co-' + key);
                 const lock = document.getElementById('co-' + key + '-lock');
@@ -10603,7 +10603,7 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
             }
 
             // Lock advanced and final until basic is complete
-            if ((courseKey === 'advanced' || courseKey === 'final') && !isBasicCourseCompleted()) {
+            if ((courseKey === 'advanced' || courseKey === 'final') && !isBasicCourseCompleted() && window.__USER_ROLE__ !== 'admin') {
                 // Show locked message inside the option
                 const optEl = document.getElementById(courseKey === 'advanced' ? 'co-advanced' : 'co-final');
                 if (optEl) {
