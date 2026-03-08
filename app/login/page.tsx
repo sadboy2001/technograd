@@ -1,4 +1,3 @@
-cat > app/login/page.tsx << 'EOF'
 'use client'
 
 import { useState, FormEvent, useEffect, Suspense } from 'react'
@@ -105,4 +104,3 @@ export default function LoginPage() {
     </Suspense>
   )
 }
-EOF
