@@ -7690,7 +7690,7 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
         };
 
         function updateCourseLockState() {
-            const locked = !isBasicCourseCompleted();
+            const locked = !isBasicCourseCompleted() && window.__USER_ROLE__ !== 'admin';
             ['advanced', 'final'].forEach(key => {
                 const opt  = document.getElementById('co-' + key);
                 const lock = document.getElementById('co-' + key + '-lock');
@@ -10603,7 +10603,7 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
             }
 
             // Lock advanced and final until basic is complete
-            if ((courseKey === 'advanced' || courseKey === 'final') && !isBasicCourseCompleted()) {
+            if ((courseKey === 'advanced' || courseKey === 'final') && !isBasicCourseCompleted()) && window.__USER_ROLE__ !== 'admin') {
                 // Show locked message inside the option
                 const optEl = document.getElementById(courseKey === 'advanced' ? 'co-advanced' : 'co-final');
                 if (optEl) {
