@@ -33,15 +33,15 @@ function StepPreview({ step, onClose }: { step: Step; onClose: () => void }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{ background: '#111', border: '1px solid #2a2a2a', borderRadius: 14, width: '100%', maxWidth: 680, maxHeight: '88vh', overflow: 'auto', padding: 32 }}>
+      <div style={{ background: '#ffffff', borderRadius: 14, width: '100%', maxWidth: 680, maxHeight: '88vh', overflow: 'auto', padding: 32 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <span style={{ fontSize: 12, color: '#555', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <span style={{ fontSize: 12, color: '#999', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             {step.type === 'theory' ? '📖 Предпросмотр — Теория' : '❓ Предпросмотр — Квиз'}
           </span>
-          <button onClick={onClose} style={{ ...S.btn('ghost'), fontSize: 18, padding: '4px 10px' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'transparent', border: '1px solid #ddd', borderRadius: 8, fontSize: 18, padding: '4px 10px', cursor: 'pointer', color: '#666' }}>✕</button>
         </div>
 
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 20 }}>{step.title}</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#111', marginBottom: 20 }}>{step.title}</h2>
 
         {step.type === 'theory' && (
           <div style={{ color: '#ccc', fontSize: 14, lineHeight: 1.8 }}
