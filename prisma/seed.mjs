@@ -158,6 +158,7 @@ async function seedCourse(courseId, courseTitle, chapters) {
             statsAccuracy: step.stats?.accuracy || 0,
             practiceType:  step.practiceType || null,
             description:   step.description || null,
+            taskId:        step.taskId        || null,
           }
         })
         totalSteps++
