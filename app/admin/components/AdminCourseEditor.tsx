@@ -344,6 +344,15 @@ export default function AdminCourseEditor() {
   const [previewStep, setPreviewStep] = useState<Step | null>(null)
   const [addingStep, setAddingStep] = useState(false)
   const [addingLesson, setAddingLesson] = useState<string | null>(null)
+  const [audioMap, setAudioMap] = useState<Record<string, string>>({})
+  const [audioDragOver, setAudioDragOver] = useState(false)
+  const [audioUploading, setAudioUploading] = useState(false)
+
+  const loadAudioMap = useCallback(() => {
+    fetch('/api/admin/audio').then(r => r.json()).then(data => {
+      if (data && typeof data === 'object') setAudioMap(data)
+    })
+  }, [])
 
   const load = useCallback(() => {
     setLoading(true)
@@ -353,7 +362,7 @@ export default function AdminCourseEditor() {
     })
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load(); loadAudioMap() }, [load, loadAudioMap])
 
   const course = courses.find(c => c.id === activeCourse)
 
@@ -364,6 +373,26 @@ export default function AdminCourseEditor() {
       if (l) { setActiveLesson(l); return }
     }
   }, [courses])
+
+  const uploadAudio = async (file: File, lessonId: string) => {
+    setAudioUploading(true)
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('lessonId', lessonId)
+    await fetch('/api/admin/audio', { method: 'POST', body: fd })
+    loadAudioMap()
+    setAudioUploading(false)
+    setAudioDragOver(false)
+  }
+
+  const removeAudio = async (lessonId: string) => {
+    await fetch('/api/admin/audio', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lessonId }),
+    })
+    loadAudioMap()
+  }
 
   const deleteStep = async (stepId: string) => {
     await fetch(`/api/admin/steps/${stepId}`, { method: 'DELETE' })
@@ -483,6 +512,63 @@ export default function AdminCourseEditor() {
               <button onClick={() => setAddingStep(true)} style={S.btn('primary')}>
                 + Добавить шаг
               </button>
+            </div>
+
+            {/* Audio upload panel */}
+            <div
+              onDragOver={e => { e.preventDefault(); setAudioDragOver(true) }}
+              onDragLeave={() => setAudioDragOver(false)}
+              onDrop={e => {
+                e.preventDefault()
+                const file = e.dataTransfer.files[0]
+                if (file && activeLesson) uploadAudio(file, activeLesson.id)
+              }}
+              style={{
+                marginBottom: 20,
+                borderRadius: 10,
+                border: audioDragOver ? '2px dashed #62a54b' : '2px dashed #2a2a2a',
+                background: audioDragOver ? '#0d1f0d' : '#111',
+                padding: '14px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                transition: 'all 0.15s',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                const input = document.createElement('input')
+                input.type = 'file'
+                input.accept = 'audio/*'
+                input.onchange = (e: any) => {
+                  const file = e.target.files[0]
+                  if (file && activeLesson) uploadAudio(file, activeLesson.id)
+                }
+                input.click()
+              }}
+            >
+              <span style={{ fontSize: 22 }}>🔊</span>
+              <div style={{ flex: 1 }}>
+                {audioUploading ? (
+                  <span style={{ color: '#62a54b', fontSize: 13 }}>Загрузка...</span>
+                ) : audioMap[activeLesson.id] ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ color: '#62a54b', fontSize: 13, fontWeight: 600 }}>
+                      ✓ {audioMap[activeLesson.id]}
+                    </span>
+                    <audio controls src={`/audio/${audioMap[activeLesson.id]}`}
+                      style={{ height: 28 }}
+                      onClick={e => e.stopPropagation()} />
+                    <button
+                      onClick={e => { e.stopPropagation(); removeAudio(activeLesson.id) }}
+                      style={{ ...S.btn('danger'), padding: '3px 8px', fontSize: 11 }}
+                    >Удалить</button>
+                  </div>
+                ) : (
+                  <span style={{ color: audioDragOver ? '#62a54b' : '#555', fontSize: 13 }}>
+                    {audioDragOver ? 'Отпусти для загрузки' : 'Перетащи аудиофайл сюда или нажми для выбора'}
+                  </span>
+                )}
+              </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

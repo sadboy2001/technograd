@@ -4342,3 +4342,106 @@
         z-index: 499;
     }
 }
+
+/* ═══════════════════════════════════════════
+   AUDIO PLAYER (v3)
+═══════════════════════════════════════════ */
+.v3-wrap {
+    background: #f8faf9;
+    border-radius: 14px;
+    padding: 16px 20px;
+    border: 1.5px solid #d4edda;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.v3-play {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.v3-play:hover { transform: scale(1.06); box-shadow: 0 6px 18px rgba(34,197,94,0.4); }
+.v3-play svg { width: 10px; height: 10px; }
+.v3-body { flex: 1; min-width: 0; }
+.v3-topline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.v3-badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #16a34a;
+    background: #dcfce7;
+    border-radius: 4px;
+    padding: 2px 7px;
+}
+.v3-track {
+    position: relative;
+    height: 4px;
+    background: #d4edda;
+    border-radius: 2px;
+    cursor: pointer;
+}
+.v3-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0%;
+    background: #22c55e;
+    border-radius: 2px;
+    transition: width 0.1s linear;
+}
+.v3-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #22c55e;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    transition: left 0.1s linear;
+}
+.v3-bottom {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+}
+.v3-time-curr { font-family: monospace; font-size: 11px; color: #16a34a; }
+.v3-time-total { font-family: monospace; font-size: 11px; color: #6b9e7a; }
+.v3-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.v3-speed-btns { display: flex; gap: 4px; }
+.v3-spd {
+    font-family: monospace;
+    font-size: 10px;
+    background: none;
+    border: 1px solid #d4edda;
+    border-radius: 4px;
+    padding: 3px 6px;
+    color: #6b9e7a;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+.v3-spd.active { background: #22c55e; border-color: #22c55e; color: #fff; }
+.v3-spd:hover:not(.active) { border-color: #22c55e; color: #16a34a; }
