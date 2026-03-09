@@ -73,6 +73,7 @@ export async function GET(
             ...base,
             practiceType: step.practiceType || '',
             description: step.description || '',
+            taskId: step.taskId || '',
           }
         }
 
