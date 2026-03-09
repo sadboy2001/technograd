@@ -7945,6 +7945,12 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
             } else {
                 renderKanbanPractice(container, step, isCompleted);
             }
+            if (!isCompleted) {
+    const skipWrap = document.createElement('div');
+    skipWrap.style.cssText = 'text-align:center;padding:8px 0 24px;';
+    skipWrap.innerHTML = '<button onclick="markComplete()" style="background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;">Пропустить →</button>';
+    container.appendChild(skipWrap);
+}
         }
 
         function renderKanbanPractice(container, step, isCompleted) {
