@@ -344,6 +344,15 @@ export default function AdminCourseEditor() {
   const [previewStep, setPreviewStep] = useState<Step | null>(null)
   const [addingStep, setAddingStep] = useState(false)
   const [addingLesson, setAddingLesson] = useState<string | null>(null)
+  const [audioMap, setAudioMap] = useState<Record<string, string>>({})
+  const [audioDragOver, setAudioDragOver] = useState<string | false>(false)
+  const [audioUploading, setAudioUploading] = useState<string | false>(false)
+
+  const loadAudioMap = useCallback(() => {
+    fetch('/api/admin/audio').then(r => r.json()).then(data => {
+      if (data && typeof data === 'object') setAudioMap(data)
+    })
+  }, [])
 
   const load = useCallback(() => {
     setLoading(true)
@@ -353,7 +362,7 @@ export default function AdminCourseEditor() {
     })
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load(); loadAudioMap() }, [load, loadAudioMap])
 
   const course = courses.find(c => c.id === activeCourse)
 
@@ -364,6 +373,28 @@ export default function AdminCourseEditor() {
       if (l) { setActiveLesson(l); return }
     }
   }, [courses])
+
+  const uploadAudio = async (file: File, lessonId: string, stepIndex: number) => {
+    const stepKey = `${lessonId}_${stepIndex}`
+    setAudioUploading(stepKey)
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('lessonId', lessonId)
+    fd.append('stepIndex', String(stepIndex))
+    await fetch('/api/admin/audio', { method: 'POST', body: fd })
+    loadAudioMap()
+    setAudioUploading(false)
+    setAudioDragOver(false)
+  }
+
+  const removeAudio = async (lessonId: string, stepIndex: number) => {
+    await fetch('/api/admin/audio', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lessonId, stepIndex }),
+    })
+    loadAudioMap()
+  }
 
   const deleteStep = async (stepId: string) => {
     await fetch(`/api/admin/steps/${stepId}`, { method: 'DELETE' })
@@ -485,15 +516,23 @@ export default function AdminCourseEditor() {
               </button>
             </div>
 
+            {/* Audio upload panel */}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {activeLesson.steps.map((step, i) => (
-                <div key={step.id} style={{
-                  background: '#161616', border: '1px solid #222', borderRadius: 10, padding: '12px 16px',
-                  display: 'flex', alignItems: 'center', gap: 12, transition: 'border-color 0.15s',
-                }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = '#3a3a3a'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = '#222'}
-                >
+              {activeLesson.steps.map((step, i) => {
+                const stepKey = `${activeLesson.id}_${i}`
+                const hasAudio = !!audioMap[stepKey]
+                const isDragOver = audioDragOver === stepKey
+
+                return (
+                <div key={step.id} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  <div style={{
+                    background: '#161616', border: '1px solid #222', borderRadius: hasAudio ? '10px 10px 0 0' : 10, padding: '12px 16px',
+                    display: 'flex', alignItems: 'center', gap: 12, transition: 'border-color 0.15s',
+                  }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = '#3a3a3a'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = '#222'}
+                  >
                   <span style={{ color: '#666', fontSize: 11, width: 20, textAlign: 'center', flexShrink: 0 }}>{i + 1}</span>
                   <span style={{ fontSize: 16, flexShrink: 0 }}>{stepIcon(step.type)}</span>
                   <div style={{ flex: 1 }}>
@@ -512,17 +551,17 @@ export default function AdminCourseEditor() {
                     {step.type}
                   </span>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-  <button onClick={() => reorderStep(step.id, 'up')} disabled={i === 0} style={{
-    background: 'transparent', border: '1px solid #2a2a2a', borderRadius: 4,
-    color: i === 0 ? '#333' : '#666', cursor: i === 0 ? 'default' : 'pointer',
-    fontSize: 10, padding: '2px 6px', lineHeight: 1,
-  }}>▲</button>
-  <button onClick={() => reorderStep(step.id, 'down')} disabled={i === activeLesson.steps.length - 1} style={{
-    background: 'transparent', border: '1px solid #2a2a2a', borderRadius: 4,
-    color: i === activeLesson.steps.length - 1 ? '#333' : '#666', cursor: i === activeLesson.steps.length - 1 ? 'default' : 'pointer',
-    fontSize: 10, padding: '2px 6px', lineHeight: 1,
-  }}>▼</button>
-</div>
+                    <button onClick={() => reorderStep(step.id, 'up')} disabled={i === 0} style={{
+                      background: 'transparent', border: '1px solid #2a2a2a', borderRadius: 4,
+                      color: i === 0 ? '#333' : '#666', cursor: i === 0 ? 'default' : 'pointer',
+                      fontSize: 10, padding: '2px 6px', lineHeight: 1,
+                    }}>▲</button>
+                    <button onClick={() => reorderStep(step.id, 'down')} disabled={i === activeLesson.steps.length - 1} style={{
+                      background: 'transparent', border: '1px solid #2a2a2a', borderRadius: 4,
+                      color: i === activeLesson.steps.length - 1 ? '#333' : '#666', cursor: i === activeLesson.steps.length - 1 ? 'default' : 'pointer',
+                      fontSize: 10, padding: '2px 6px', lineHeight: 1,
+                    }}>▼</button>
+                  </div>
                   <button onClick={() => setPreviewStep(step)} style={{
                     background: 'transparent', border: '1px solid #2a2a2a', borderRadius: 6,
                     color: '#666', cursor: 'pointer', fontSize: 12, padding: '4px 8px',
@@ -533,8 +572,63 @@ export default function AdminCourseEditor() {
                       color: '#666', cursor: 'pointer', fontSize: 12, padding: '4px 8px',
                     }} title="Редактировать">✏️</button>
                   )}
+                  </div>
+
+                  {/* Per-step audio zone */}
+                  <div
+                    onDragOver={e => { e.preventDefault(); setAudioDragOver(stepKey) }}
+                    onDragLeave={() => setAudioDragOver(false)}
+                    onDrop={e => {
+                      e.preventDefault()
+                      const file = e.dataTransfer.files[0]
+                      if (file) uploadAudio(file, activeLesson.id, i)
+                    }}
+                    onClick={() => {
+                      const input = document.createElement('input')
+                      input.type = 'file'
+                      input.accept = 'audio/mp3,audio/mpeg,audio/m4a,audio/x-m4a,audio/mp4,audio/wav,audio/ogg,.mp3,.m4a,.wav,.ogg'
+                      input.onchange = (e: any) => {
+                        const file = e.target.files[0]
+                        if (file) uploadAudio(file, activeLesson.id, i)
+                      }
+                      input.click()
+                    }}
+                    style={{
+                      borderRadius: '0 0 10px 10px',
+                      border: isDragOver ? '1px dashed #62a54b' : '1px dashed #1e1e1e',
+                      borderTop: 'none',
+                      background: isDragOver ? '#0d1f0d' : hasAudio ? '#0f1a0f' : '#111',
+                      padding: '7px 16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <span style={{ fontSize: 13 }}>🔊</span>
+                    {audioUploading === stepKey ? (
+                      <span style={{ color: '#62a54b', fontSize: 11 }}>Загрузка...</span>
+                    ) : hasAudio ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                        <span style={{ color: '#62a54b', fontSize: 11, fontWeight: 600 }}>✓ {audioMap[stepKey]}</span>
+                        <audio controls src={`/audio/${audioMap[stepKey]}`}
+                          style={{ height: 22, flex: 1 }}
+                          onClick={e => e.stopPropagation()} />
+                        <button
+                          onClick={e => { e.stopPropagation(); removeAudio(activeLesson.id, i) }}
+                          style={{ ...S.btn('danger'), padding: '2px 7px', fontSize: 10, flexShrink: 0 }}
+                        >Удалить</button>
+                      </div>
+                    ) : (
+                      <span style={{ color: isDragOver ? '#62a54b' : '#3a3a3a', fontSize: 11 }}>
+                        {isDragOver ? 'Отпусти для загрузки' : 'Перетащи аудио (mp3, m4a) или нажми'}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </>
         )}

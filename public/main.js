@@ -7274,9 +7274,104 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
             }
         }
 
+        // ══════════════════════════════════════════════
+        // AUDIO PLAYER
+        // ══════════════════════════════════════════════
+        let _ap = null;
+
+        // Аудиомаппинг загружается из /audio/map.json
+        let AUDIO_MAP = {};
+        fetch('/audio/map.json').then(r => r.json()).then(data => { AUDIO_MAP = data; }).catch(() => {});
+
+        function renderAudioPlayer(filename) {
+            return `
+            <div class="v3-wrap">
+              <button class="v3-play" id="ap-play" onclick="apToggle()">
+                <svg viewBox="0 0 10 12"><polygon points="0,0 10,6 0,12" fill="white"/></svg>
+              </button>
+              <div class="v3-body">
+                <div class="v3-topline">
+                  <span class="v3-badge">🔊 Озвучка</span>
+                </div>
+                <div class="v3-track" id="ap-track" onclick="apSeek(event)">
+                  <div class="v3-fill" id="ap-fill"></div>
+                  <div class="v3-thumb" id="ap-thumb"></div>
+                </div>
+                <div class="v3-bottom">
+                  <span class="v3-time-curr" id="ap-curr">0:00</span>
+                  <span class="v3-time-total" id="ap-total">0:00</span>
+                </div>
+              </div>
+              <div class="v3-right">
+                <div class="v3-speed-btns">
+                  <button class="v3-spd" onclick="apSpeed(0.75)">0.75×</button>
+                  <button class="v3-spd active" onclick="apSpeed(1)">1×</button>
+                  <button class="v3-spd" onclick="apSpeed(1.5)">1.5×</button>
+                  <button class="v3-spd" onclick="apSpeed(2)">2×</button>
+                </div>
+              </div>
+              <audio id="ap-audio" src="/audio/${filename}"
+                ontimeupdate="apUpdate()" onloadedmetadata="apMeta()"></audio>
+            </div>`;
+        }
+
+        function apEl() { return _ap || (_ap = document.getElementById('ap-audio')); }
+
+        function apToggle() {
+            const a = apEl(); if (!a) return;
+            const btn = document.getElementById('ap-play');
+            if (a.paused) {
+                a.play();
+                btn.innerHTML = '<svg viewBox="0 0 10 12" fill="white"><rect x="0" y="0" width="3.5" height="12" fill="white"/><rect x="6.5" y="0" width="3.5" height="12" fill="white"/></svg>';
+            } else {
+                a.pause();
+                btn.innerHTML = '<svg viewBox="0 0 10 12"><polygon points="0,0 10,6 0,12" fill="white"/></svg>';
+            }
+        }
+
+        function apUpdate() {
+            const a = apEl(); if (!a || !a.duration) return;
+            const pct = (a.currentTime / a.duration) * 100;
+            const fill = document.getElementById('ap-fill');
+            const thumb = document.getElementById('ap-thumb');
+            const curr = document.getElementById('ap-curr');
+            if (fill) fill.style.width = pct + '%';
+            if (thumb) thumb.style.left = pct + '%';
+            if (curr) curr.textContent = apFmt(a.currentTime);
+        }
+
+        function apMeta() {
+            _ap = document.getElementById('ap-audio');
+            const total = document.getElementById('ap-total');
+            if (total && _ap) total.textContent = apFmt(_ap.duration);
+        }
+
+        function apSeek(e) {
+            const a = apEl(); if (!a) return;
+            const rect = document.getElementById('ap-track').getBoundingClientRect();
+            a.currentTime = ((e.clientX - rect.left) / rect.width) * a.duration;
+        }
+
+        function apSpeed(s) {
+            const a = apEl(); if (a) a.playbackRate = s;
+            document.querySelectorAll('.v3-spd').forEach(b => {
+                b.classList.toggle('active', parseFloat(b.textContent) === s);
+            });
+        }
+
+        function apFmt(s) {
+            const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+            return m + ':' + String(sec).padStart(2, '0');
+        }
+
         function renderTheory(container, step, isCompleted) {
+            _ap = null;
             const { lesson } = getLessonById(state.currentLessonId);
+            const audioKey = state.currentLessonId + '_' + state.currentStepIndex;
+            const audioFile = AUDIO_MAP[audioKey];
+            const audioHtml = audioFile ? renderAudioPlayer(audioFile) : '';
             let html = `
+                ${audioHtml}
                 ${step.content}
                 <div class="nav-actions" style="margin-top:40px; border-top:1px solid #eee; padding-top:20px;">
                     <button class="btn-nav" onclick="prevStep()" ${state.currentStepIndex === 0 ? 'disabled' : ''}>← Назад</button>
@@ -7850,6 +7945,12 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
             } else {
                 renderKanbanPractice(container, step, isCompleted);
             }
+            if (!isCompleted) {
+    const skipWrap = document.createElement('div');
+    skipWrap.style.cssText = 'text-align:center;padding:8px 0 24px;';
+    skipWrap.innerHTML = '<button onclick="markComplete()" style="background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;">Пропустить →</button>';
+    container.appendChild(skipWrap);
+}
         }
 
         function renderKanbanPractice(container, step, isCompleted) {
@@ -11939,5 +12040,11 @@ INSERT INTO produce VALUES
         if (typeof loadLesson !== 'undefined') window.loadLesson = loadLesson;
         if (typeof loadStep !== 'undefined') window.loadStep = loadStep;
         if (typeof refreshAll !== 'undefined') window.refreshAll = refreshAll;
+
+        window.apToggle = apToggle;
+        window.apUpdate = apUpdate;
+        window.apMeta   = apMeta;
+        window.apSeek   = apSeek;
+        window.apSpeed  = apSpeed;
 
 })(); // IIFE — DOM is already ready when this script is injected

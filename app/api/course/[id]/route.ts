@@ -73,6 +73,9 @@ export async function GET(
             ...base,
             practiceType: step.practiceType || '',
             description: step.description || '',
+            taskId: step.taskId || '',
+            diagramType: step.diagramType || '',
+            mmType: step.mmType || '',
           }
         }
 
