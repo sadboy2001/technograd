@@ -7367,8 +7367,9 @@ docker exec techshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword<
         function renderTheory(container, step, isCompleted) {
             _ap = null;
             const { lesson } = getLessonById(state.currentLessonId);
-            const audioFile = AUDIO_MAP[state.currentLessonId];
-            const audioHtml = (audioFile && state.currentStepIndex === 0) ? renderAudioPlayer(audioFile) : '';
+            const audioKey = state.currentLessonId + '_' + state.currentStepIndex;
+            const audioFile = AUDIO_MAP[audioKey];
+            const audioHtml = audioFile ? renderAudioPlayer(audioFile) : '';
             let html = `
                 ${audioHtml}
                 ${step.content}

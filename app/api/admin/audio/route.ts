@@ -19,7 +19,6 @@ async function writeMap(map: Record<string, string>) {
   await writeFile(MAP_PATH, JSON.stringify(map, null, 2), 'utf-8')
 }
 
-// GET /api/admin/audio — get current map
 export async function GET() {
   const auth = await requireAdmin()
   if (auth.error) return auth.error
@@ -27,7 +26,6 @@ export async function GET() {
   return NextResponse.json(map)
 }
 
-// POST /api/admin/audio — upload audio file and update map
 export async function POST(request: Request) {
   const auth = await requireAdmin()
   if (auth.error) return auth.error
@@ -35,35 +33,37 @@ export async function POST(request: Request) {
   const formData = await request.formData()
   const file = formData.get('file') as File
   const lessonId = formData.get('lessonId') as string
+  const stepIndex = formData.get('stepIndex') as string ?? '0'
 
   if (!file || !lessonId) {
     return NextResponse.json({ error: 'file and lessonId required' }, { status: 400 })
   }
 
-  const ext = file.name.split('.').pop() || 'mp3'
-  const filename = `${lessonId}.${ext}`
+  const key = `${lessonId}_${stepIndex}`
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'mp3'
+  const filename = `${key}.${ext}`
+
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
-
   await writeFile(join(process.cwd(), 'public', 'audio', filename), buffer)
 
   const map = await readMap()
-  map[lessonId] = filename
+  map[key] = filename
   await writeMap(map)
 
   return NextResponse.json({ ok: true, filename })
 }
 
-// DELETE /api/admin/audio — remove audio for a lesson
 export async function DELETE(request: Request) {
   const auth = await requireAdmin()
   if (auth.error) return auth.error
 
-  const { lessonId } = await request.json()
+  const { lessonId, stepIndex = 0 } = await request.json()
   if (!lessonId) return NextResponse.json({ error: 'lessonId required' }, { status: 400 })
 
+  const key = `${lessonId}_${stepIndex}`
   const map = await readMap()
-  delete map[lessonId]
+  delete map[key]
   await writeMap(map)
 
   return NextResponse.json({ ok: true })
