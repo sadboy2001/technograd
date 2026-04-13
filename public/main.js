@@ -4511,7 +4511,105 @@ BASE_URL = <span class="at-str">"https://example.com"</span>
                     </div>
                 </div>
             `,
+fc_task_2_1: `
+                <h1>🏆 Практическое задание: настройка conftest.py</h1>
+                <p class="lesson-text">Вы изучили <code>pytest_addoption</code> и фикстуру <code>driver</code>. Теперь реализуйте полный <strong>conftest.py</strong> в вашем репозитории <strong>qa-auto-project</strong>.</p>
 
+                <div class="at-final-intro">
+                    <div class="at-fi-icon">🎯</div>
+                    <div>
+                        <div class="at-fi-title">Что нужно сделать</div>
+                        <div class="at-fi-desc">Создать conftest.py с регистрацией аргументов командной строки, фикстурой driver и поддержкой Chrome и Firefox в headless-режиме.</div>
+                    </div>
+                </div>
+
+                <h2 class="pm-section-title">Шаг 1 — Подготовка ветки</h2>
+                <div class="at-task-block">
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">
+                            Создайте новую ветку для задания:
+                            <pre class="at-code at-code-sm"><span class="at-kw">git</span> checkout -b <span class="at-str">feature/conftest-setup</span></pre>
+                        </div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Убедитесь что установлены <code>pytest</code>, <code>selenium</code> и <code>webdriver-manager</code>:
+                            <pre class="at-code at-code-sm">pip install pytest selenium webdriver-manager
+pip freeze &gt; requirements.txt</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="pm-section-title">Шаг 2 — Создайте conftest.py</h2>
+                <div class="at-task-block">
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Создайте файл <strong>conftest.py</strong> в корне проекта (не внутри <code>tests/</code>)</div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Добавьте функцию <code>pytest_addoption</code> с тремя аргументами: <code>--browser</code> (choices: chrome/firefox), <code>--headless</code> (store_true), <code>--base_url</code> (default: http://localhost)</div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Реализуйте фикстуру <code>driver</code> с <code>yield</code>: читает аргументы через <code>request.config.getoption()</code>, поднимает Chrome или Firefox с учётом headless, после теста вызывает <code>driver.quit()</code></div>
+                    </div>
+                </div>
+
+                <h2 class="pm-section-title">Шаг 3 — Проверка</h2>
+                <div class="at-task-block">
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Запустите тесты с браузером по умолчанию:
+                            <pre class="at-code at-code-sm">pytest tests/ -v</pre>
+                        </div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Проверьте headless-режим:
+                            <pre class="at-code at-code-sm">pytest tests/ --headless -v</pre>
+                        </div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Проверьте запуск с Firefox:
+                            <pre class="at-code at-code-sm">pytest tests/ --browser=firefox -v</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="pm-section-title">Шаг 4 — Коммит и PR</h2>
+                <div class="at-task-block">
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">
+                            Закоммитьте изменения:
+                            <pre class="at-code at-code-sm"><span class="at-kw">git</span> add conftest.py requirements.txt
+<span class="at-kw">git</span> commit -m <span class="at-str">"Add conftest with addoption and driver fixture"</span>
+<span class="at-kw">git</span> push origin feature/conftest-setup</pre>
+                        </div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Создайте Pull Request и смержите ветку в <strong>main</strong></div>
+                    </div>
+                </div>
+
+                <div class="at-checklist-summary">
+                    <div class="at-cs-title">✅ Чеклист задания</div>
+                    <div class="at-cs-grid">
+                        <div class="at-cs-item"><span class="at-cs-icon">🌿</span>Ветка feature/conftest-setup</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">⚙️</span>conftest.py в корне проекта</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">🔧</span>pytest_addoption с 3 аргументами</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">🌐</span>Фикстура driver с Chrome/Firefox</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">🕶️</span>Headless-режим работает</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">📦</span>requirements.txt обновлён</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">🚀</span>PR и merge в main</div>
+                    </div>
+                </div>
+            `,
+                
             fc_2_1_0: `
                 <h1>⚙️ pytest_addoption: параметры запуска из консоли</h1>
                 <p class="lesson-text">До сих пор вы запускали тесты простой командой <code>pytest tests/</code>. Но в реальных проектах нужно управлять запуском: выбирать браузер, включать режим без окна (headless), задавать адрес тестового стенда. Для этого pytest предоставляет механизм <strong>addoption</strong>.</p>
