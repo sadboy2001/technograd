@@ -5081,6 +5081,117 @@ pipeline {
                 </div>
                 <blockquote class="lesson-example"><strong>Pipeline as Code:</strong> Jenkinsfile коммитится в репозиторий рядом с тестами. Это значит что изменение пайплайна — это такой же PR с код-ревью, как и изменение тестов. История изменений CI/CD конфигурации хранится в Git.</blockquote>
             `,
+                            fc_task_2_2: `
+                <h1>🏆 Практическое задание: Docker и Jenkins CI/CD</h1>
+                <p class="lesson-text">Вы изучили Docker и Jenkins. Теперь настройте автоматический запуск ваших тестов из репозитория <strong>qa-auto-project</strong> через Jenkins в Docker.</p>
+
+                <div class="at-final-intro">
+                    <div class="at-fi-icon">🎯</div>
+                    <div>
+                        <div class="at-fi-title">Что нужно сделать</div>
+                        <div class="at-fi-desc">Поднять Jenkins в Docker-контейнере, подключить репозиторий с тестами и настроить пайплайн, который автоматически запускает тесты и сохраняет Allure-отчёт.</div>
+                    </div>
+                </div>
+
+                <h2 class="pm-section-title">Шаг 1 — Запустите Jenkins в Docker</h2>
+                <div class="at-task-block">
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Убедитесь что Docker Desktop запущен (иконка в трее активна)</div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">
+                            Запустите Jenkins:
+                            <pre class="at-code at-code-sm">docker run -d \
+  --name jenkins \
+  -p 8080:8080 \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts</pre>
+                        </div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">
+                            Получите начальный пароль и откройте <code>http://localhost:8080</code>:
+                            <pre class="at-code at-code-sm">docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword</pre>
+                        </div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Завершите первоначальную настройку Jenkins: установите предложенные плагины, создайте администратора</div>
+                    </div>
+                </div>
+
+                <h2 class="pm-section-title">Шаг 2 — Добавьте Jenkinsfile в репозиторий</h2>
+                <div class="at-task-block">
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">
+                            Создайте ветку для задания:
+                            <pre class="at-code at-code-sm"><span class="at-kw">git</span> checkout -b <span class="at-str">feature/jenkins-pipeline</span></pre>
+                        </div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Создайте файл <strong>Jenkinsfile</strong> в корне репозитория со stages: Checkout, Install dependencies, Run tests — и блоком <code>post { always { archiveArtifacts } }</code></div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">
+                            Закоммитьте и запушьте:
+                            <pre class="at-code at-code-sm"><span class="at-kw">git</span> add Jenkinsfile
+<span class="at-kw">git</span> commit -m <span class="at-str">"Add Jenkinsfile for CI pipeline"</span>
+<span class="at-kw">git</span> push origin feature/jenkins-pipeline</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="pm-section-title">Шаг 3 — Создайте Pipeline в Jenkins</h2>
+                <div class="at-task-block">
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">В Jenkins UI: New Item → Pipeline → введите имя <code>qa-auto-project</code></div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">В разделе Pipeline выберите <strong>Pipeline script from SCM</strong>, укажите ваш GitHub репозиторий и ветку <code>main</code></div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Нажмите <strong>Build Now</strong> и убедитесь что все stages прошли зелёными</div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Проверьте что в артефактах сборки появилась папка <code>allure-results/</code></div>
+                    </div>
+                </div>
+
+                <h2 class="pm-section-title">Шаг 4 — Merge и завершение</h2>
+                <div class="at-task-block">
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Создайте Pull Request feature/jenkins-pipeline → main и смержите его</div>
+                    </div>
+                    <div class="at-task-item">
+                        <div class="at-task-check">☐</div>
+                        <div class="at-task-body">Запустите пайплайн ещё раз из ветки main — убедитесь что всё работает после merge</div>
+                    </div>
+                </div>
+
+                <div class="at-checklist-summary">
+                    <div class="at-cs-title">✅ Чеклист задания</div>
+                    <div class="at-cs-grid">
+                        <div class="at-cs-item"><span class="at-cs-icon">🐳</span>Jenkins запущен в Docker</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">🔑</span>Начальная настройка Jenkins завершена</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">📋</span>Jenkinsfile в корне репозитория</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">🔗</span>Pipeline подключён к GitHub</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">✅</span>Все stages прошли успешно</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">📊</span>allure-results сохранены как артефакт</div>
+                        <div class="at-cs-item"><span class="at-cs-icon">🚀</span>PR и merge в main</div>
+                    </div>
+                </div>
+            `,
 
             fc_2_3_0: `
                 <h1>🛒 Финальный проект: TechShop — Магазин электроники</h1>
